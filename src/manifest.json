@@ -1,0 +1,15 @@
+{
+  "name": "你的内在空间",
+  "appid": "__UNI__INNERSPACE",
+  "description": "AI显化教练与情绪陪伴空间",
+  "versionName": "1.0.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "h5": {
+    "title": "你的内在空间"
+  },
+  "uniStatistics": {
+    "enable": false
+  },
+  "vueVersion": "3"
+}

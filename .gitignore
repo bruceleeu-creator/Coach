@@ -1,0 +1,19 @@
+# env & secrets
+.env
+.env.local
+.env.*.local
+
+# deps & build
+node_modules/
+dist/
+unpackage/
+.vite/
+*.local
+
+# agent / local
+.superpowers/
+.DS_Store
+*.log
+.idea/
+.vscode/
+*.swp
