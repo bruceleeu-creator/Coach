@@ -316,7 +316,19 @@ export interface DeepSeekMessage {
   content: string
 }
 
-export type InterfaceTheme = 'monochrome' | 'standard' | 'dark' | 'sage' | 'rose' | 'moon' | 'lavender'
+/** 明暗：light / dark；历史 monochrome/standard 等会 normalize 到 light */
+export type InterfaceTheme = 'light' | 'dark' | 'monochrome' | 'standard' | 'sage' | 'rose' | 'moon' | 'lavender'
+/** 点缀色：保留简约骨架，只换强调色与极淡氛围 */
+export type ColorAccent =
+  | 'slate'
+  | 'ink'
+  | 'terracotta'
+  | 'amber'
+  | 'forest'
+  | 'ocean'
+  | 'plum'
+  | 'rose'
+  | 'ochre'
 export type ReplyTone = 'gentle' | 'clear' | 'coach' | 'intimate'
 export type ReplyLength = 'short' | 'balanced' | 'deep'
 export type DeepSeekModel = 'deepseek-chat' | 'deepseek-reasoner'
@@ -334,6 +346,8 @@ export interface ChatProvider {
 
 export interface CoachPreferences {
   interfaceTheme: InterfaceTheme
+  /** 点缀色系；缺省 slate */
+  colorAccent?: ColorAccent
   replyTone: ReplyTone
   replyLength: ReplyLength
   deepseekModel: DeepSeekModel

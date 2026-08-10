@@ -5,7 +5,8 @@ import { CloudSyncService } from './services/cloud-sync'
 import { PreferenceService } from './services/preferences'
 
 onLaunch(async () => {
-  PreferenceService.applyTheme()
+  const prefs = PreferenceService.get()
+  PreferenceService.applyTheme(prefs.interfaceTheme, prefs.colorAccent || 'slate')
   await AuthService.hydrateSession()
   await CloudSyncService.pullAndMerge()
   console.log('你的内在空间 H5 启动')

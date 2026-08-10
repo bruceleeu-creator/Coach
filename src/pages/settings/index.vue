@@ -33,19 +33,35 @@
         </view>
 
         <view v-if="activeSettingsTab === 'user'" class="panel section hero-panel">
-          <text class="section-title">界面风格</text>
-          <text class="section-copy">浅色默认，深色可选。保存后全站读取。</text>
+          <text class="section-title">明暗</text>
+          <text class="section-copy">结构层：纸白或近黑底。保存后全站读取。</text>
           <view class="option-grid theme-grid">
             <view
               v-for="theme in INTERFACE_THEMES"
               :key="theme.value"
               class="option-card"
-              :class="{ active: resolvedTheme === theme.value }"
+              :class="{ active: resolvedMode === theme.value }"
               @tap="preferences.interfaceTheme = theme.value"
             >
-              <view :class="['theme-dot', `dot-${theme.value}`]"></view>
+              <view :class="['theme-dot', `dot-mode-${theme.value}`]"></view>
               <text class="option-title">{{ theme.label }}</text>
               <text class="option-hint">{{ theme.hint }}</text>
+            </view>
+          </view>
+
+          <text class="section-title accent-title">点缀色</text>
+          <text class="section-copy">气质层：保留简约版式，只换强调色与极淡氛围。主按钮仍为墨色。</text>
+          <view class="accent-grid">
+            <view
+              v-for="accent in COLOR_ACCENTS"
+              :key="accent.value"
+              class="accent-card"
+              :class="{ active: resolvedAccent === accent.value }"
+              @tap="preferences.colorAccent = accent.value"
+            >
+              <view class="accent-swatch" :style="{ background: accent.swatch, boxShadow: `inset 0 0 0 12rpx ${accent.swatchSoft}` }" />
+              <text class="option-title">{{ accent.label }}</text>
+              <text class="option-hint">{{ accent.hint }}</text>
             </view>
           </view>
         </view>
@@ -190,7 +206,15 @@ import { COACH_DISCLAIMER, LOCAL_DATA_NOTICE } from '@/services/disclaimer'
 import { DesireService } from '@/services/desires'
 import { testDeepSeekConnection } from '@/services/deepseek'
 import { GamificationService } from '@/services/gamification'
-import { buildPromptRules, DEEPSEEK_MODELS, INTERFACE_THEMES, PreferenceService, REPLY_LENGTHS, REPLY_TONES } from '@/services/preferences'
+import {
+  buildPromptRules,
+  COLOR_ACCENTS,
+  DEEPSEEK_MODELS,
+  INTERFACE_THEMES,
+  PreferenceService,
+  REPLY_LENGTHS,
+  REPLY_TONES,
+} from '@/services/preferences'
 import { ProfileService } from '@/services/profile'
 import type { AuthAccount, BraceletBinding, CoachPreferences, Desire, GrowthOverview, MemoryItem, UserProfile } from '@/types'
 
@@ -219,13 +243,17 @@ const passwordCodeCountdown = ref(0)
 let passwordCodeTimer: ReturnType<typeof setInterval> | null = null
 const disclaimer = COACH_DISCLAIMER
 const localDataNotice = LOCAL_DATA_NOTICE
-const resolvedTheme = computed(() => PreferenceService.resolveTheme(preferences.value.interfaceTheme))
+const resolvedMode = computed(() => PreferenceService.resolveMode(preferences.value.interfaceTheme))
+const resolvedAccent = computed(() =>
+  PreferenceService.resolveAccent(preferences.value.colorAccent, preferences.value.interfaceTheme),
+)
 
 const profileSummary = computed(() => {
-  const theme = INTERFACE_THEMES.find((item) => item.value === resolvedTheme.value)?.label || '浅色'
+  const mode = INTERFACE_THEMES.find((item) => item.value === resolvedMode.value)?.label || '浅色'
+  const accent = COLOR_ACCENTS.find((item) => item.value === resolvedAccent.value)?.label || '石青'
   const tone = REPLY_TONES.find((item) => item.value === preferences.value.replyTone)?.label || '温柔托住'
   const length = REPLY_LENGTHS.find((item) => item.value === preferences.value.replyLength)?.label || '适中回复'
-  return `当前界面：${theme} · 教练语气：${tone} · ${length}`
+  return `界面：${mode} · ${accent} · 语气：${tone} · ${length}`
 })
 
 const promptPreview = computed(() => {
@@ -268,9 +296,12 @@ const apiKeyPlaceholder = computed(() => {
   return `已保存 ${PreferenceService.maskDeepSeekApiKey()} · 重新输入可覆盖`
 })
 
-watch(() => preferences.value.interfaceTheme, (theme) => {
-  PreferenceService.applyTheme(theme)
-})
+watch(
+  () => [preferences.value.interfaceTheme, preferences.value.colorAccent] as const,
+  ([theme, accent]) => {
+    PreferenceService.applyTheme(theme, accent || 'slate')
+  },
+)
 
 function refreshAiKeyState() {
   hasLocalApiKey.value = PreferenceService.hasDeepSeekApiKey()
@@ -704,14 +735,50 @@ function openShop() {
   border: 1rpx solid var(--border);
 }
 
-.dot-monochrome {
+.dot-mode-light {
   background: #f7f6f3;
   box-shadow: inset 0 0 0 10rpx #141414;
 }
 
-.dot-dark {
+.dot-mode-dark {
   background: #101010;
   box-shadow: inset 0 0 0 10rpx #f2f1ec;
+}
+
+.accent-title {
+  margin-top: 28rpx;
+}
+
+.accent-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10rpx;
+}
+
+.accent-card {
+  padding: 14rpx 12rpx;
+  border-radius: $radius-sm;
+  background: var(--control-bg);
+  border: 1rpx solid var(--border);
+  transition: transform var(--duration-fast) var(--ease-out), border-color var(--duration) var(--ease-out);
+}
+
+.accent-card:active {
+  transform: scale(0.98);
+}
+
+.accent-card.active {
+  border-color: var(--ink, #{$ink});
+  background: var(--surface, #{$surface});
+  box-shadow: 0 0 0 1rpx var(--accent, #{$accent});
+}
+
+.accent-swatch {
+  width: 100%;
+  height: 36rpx;
+  border-radius: 6rpx;
+  margin-bottom: 10rpx;
+  border: 1rpx solid var(--border);
 }
 
 .option-title {

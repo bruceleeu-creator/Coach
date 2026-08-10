@@ -27,7 +27,8 @@ const session = {
 } satisfies ChatSession
 
 const preferences = {
-  interfaceTheme: 'standard',
+  interfaceTheme: 'light',
+  colorAccent: 'slate',
   replyTone: 'gentle',
   replyLength: 'balanced',
   deepseekModel: 'deepseek-chat',
