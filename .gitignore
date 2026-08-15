@@ -17,3 +17,6 @@ unpackage/
 .idea/
 .vscode/
 *.swp
+
+# production env (contains publishable key, build locally)
+.env.production

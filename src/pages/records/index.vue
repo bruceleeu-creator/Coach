@@ -250,6 +250,7 @@ function openShop() {
 
 .records-scroll {
   height: 100vh;
+  height: 100dvh;
 }
 
 .records-scroll .content {

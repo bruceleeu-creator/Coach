@@ -249,6 +249,7 @@ function openShop() {
 
 .scroll {
   height: 100vh;
+  height: 100dvh;
 }
 
 .small-hero {

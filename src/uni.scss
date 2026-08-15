@@ -426,6 +426,7 @@ page {
 
 .page-shell {
   min-height: 100vh;
+  min-height: 100dvh;
   position: relative;
   overflow-x: hidden;
   overflow-y: auto;
@@ -437,7 +438,8 @@ page {
 }
 
 .safe-top {
-  padding-top: calc(var(--status-bar-height, 44px) + 16rpx);
+  /* H5 浏览器/微信内 status-bar-height 为 0px；env(safe-area-inset-top) 兜底全屏/刘海场景 */
+  padding-top: calc(env(safe-area-inset-top, 0px) + var(--status-bar-height, 0px) + 16rpx);
 }
 
 .content {
@@ -615,6 +617,14 @@ page {
   height: 200rpx;
   min-height: 200rpx;
   line-height: 1.6;
+}
+
+/* 移动端：输入控件字号 ≥16px，避免 iOS Safari/微信 WebView 聚焦时自动放大页面 */
+@media (hover: none) and (pointer: coarse) {
+  .soft-input,
+  .soft-textarea {
+    font-size: 16px;
+  }
 }
 
 .chip-grid {

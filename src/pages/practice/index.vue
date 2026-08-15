@@ -131,6 +131,7 @@ function formatDate(value: string) {
 
 .scroll {
   height: 100vh;
+  height: 100dvh;
 }
 
 .section {

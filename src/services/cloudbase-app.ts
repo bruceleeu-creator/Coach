@@ -16,17 +16,28 @@ type CloudBaseSdk = {
 
 let app: CloudBaseApp | null = null
 
+/** 归一化 env 值：空白与 .env.example 模板占位（your-*）一律视为未配置 */
+function normalizeEnvValue(value: string | undefined): string {
+  const trimmed = (value || '').trim()
+  if (!trimmed) return ''
+  if (/^your[-_]/i.test(trimmed)) return ''
+  return trimmed
+}
+
 export function getCloudBaseConfig() {
-  const envId = import.meta.env.VITE_CLOUDBASE_ENV_ID?.trim() || ''
-  const region = import.meta.env.VITE_CLOUDBASE_REGION?.trim() || 'ap-shanghai'
-  const accessKey = import.meta.env.VITE_CLOUDBASE_ACCESS_KEY?.trim() || ''
+  const envId = normalizeEnvValue(import.meta.env.VITE_CLOUDBASE_ENV_ID)
+  const region = normalizeEnvValue(import.meta.env.VITE_CLOUDBASE_REGION) || 'ap-shanghai'
+  const accessKey = normalizeEnvValue(import.meta.env.VITE_CLOUDBASE_ACCESS_KEY)
   return { envId, region, accessKey }
 }
 
 export function assertCloudBaseConfigured(): ReturnType<typeof getCloudBaseConfig> {
   const config = getCloudBaseConfig()
   if (!config.envId || !config.accessKey) {
-    throw new Error('请先配置 CloudBase：VITE_CLOUDBASE_ENV_ID、VITE_CLOUDBASE_REGION、VITE_CLOUDBASE_ACCESS_KEY。')
+    throw new Error(
+      'CloudBase 尚未配置：请在腾讯云 CloudBase 控制台创建/激活环境后，把真实环境 ID 填入 .env 的 VITE_CLOUDBASE_ENV_ID，' +
+        '把 Publishable Key 填入 VITE_CLOUDBASE_ACCESS_KEY（当前是占位值 your-*，无法使用）。'
+    )
   }
   return config
 }

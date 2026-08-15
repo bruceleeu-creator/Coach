@@ -68,6 +68,7 @@ function submit() {
 
 .scroll {
   height: 100vh;
+  height: 100dvh;
 }
 
 .form-card {

@@ -12,6 +12,10 @@
         </view>
 
         <view class="panel login-card">
+          <view v-if="!cloudbaseReady" class="config-banner">
+            <text class="config-banner-title">CloudBase 尚未配置</text>
+            <text class="config-banner-copy">短信验证码暂不可用。请在项目 .env 填写真实的 VITE_CLOUDBASE_ENV_ID 与 VITE_CLOUDBASE_ACCESS_KEY，并确保控制台已开启手机号短信登录。</text>
+          </view>
           <text class="login-title">手机号注册</text>
           <text class="field-label">手机号</text>
           <input :value="phone" class="soft-input" type="number" maxlength="11" placeholder="请输入 11 位手机号" @input="onPhoneInput" />
@@ -39,9 +43,13 @@
 import { onLoad } from '@dcloudio/uni-app'
 import { computed, onUnmounted, ref } from 'vue'
 import { AuthService } from '@/services/auth'
+import { CloudBaseAuthService } from '@/services/cloudbase-auth'
+import { resolvePostAuthTarget } from '@/services/deep-link'
 import { ProfileService } from '@/services/profile'
 
+const cloudbaseReady = CloudBaseAuthService.isConfigured()
 const braceletId = ref('')
+const nextTarget = ref('')
 const phone = ref('')
 const password = ref('')
 const confirmPassword = ref('')
@@ -60,6 +68,7 @@ const codeButtonText = computed(() => {
 
 onLoad((query) => {
   braceletId.value = String(query?.bracelet_id || query?.braceletId || '')
+  nextTarget.value = resolvePostAuthTarget(query?.next) || ''
 })
 
 onUnmounted(() => {
@@ -132,7 +141,11 @@ async function register() {
       verificationCode: verificationCode.value,
     })
     if (braceletId.value) ProfileService.bindBracelet(braceletId.value)
-    AuthService.redirectAfterAuth(result.user)
+    if (nextTarget.value) {
+      uni.reLaunch({ url: nextTarget.value })
+    } else {
+      AuthService.redirectAfterAuth(result.user)
+    }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : '注册失败'
     uni.showModal({ title: '注册失败', content: message, showCancel: false })
@@ -142,8 +155,10 @@ async function register() {
 }
 
 function backLogin() {
-  const query = braceletId.value ? `?bracelet_id=${encodeURIComponent(braceletId.value)}` : ''
-  uni.redirectTo({ url: `/pages/auth/login${query}` })
+  const query: string[] = []
+  if (braceletId.value) query.push(`bracelet_id=${encodeURIComponent(braceletId.value)}`)
+  if (nextTarget.value) query.push(`next=${encodeURIComponent(nextTarget.value)}`)
+  uni.redirectTo({ url: `/pages/auth/login${query.length ? `?${query.join('&')}` : ''}` })
 }
 </script>
 
@@ -151,10 +166,34 @@ function backLogin() {
 
 .scroll {
   height: 100vh;
+  height: 100dvh;
 }
 
 .login-card {
   margin-top: 28rpx;
+}
+
+.config-banner {
+  margin-bottom: 24rpx;
+  padding: 20rpx 22rpx;
+  border-radius: $radius-sm;
+  border: 1rpx solid var(--border-strong, #{$border-strong});
+  background: var(--control-bg);
+}
+
+.config-banner-title {
+  display: block;
+  color: var(--ink, #{$ink});
+  font-size: $font-sm;
+  font-weight: 700;
+}
+
+.config-banner-copy {
+  display: block;
+  margin-top: 6rpx;
+  color: var(--ink-soft, #{$ink-soft});
+  font-size: $font-xs;
+  line-height: 1.6;
 }
 
 .login-title {

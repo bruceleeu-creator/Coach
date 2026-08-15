@@ -19,15 +19,19 @@
           </text>
           <view class="hero-actions">
             <view class="primary-btn" @tap="goRegister">创建账号</view>
-            <view class="secondary-btn" @tap="goDemo">体验演示账号</view>
           </view>
           <text class="fine-print">已有账号？<text class="text-link inline" @tap="goLogin">去登录</text></text>
         </view>
 
         <view class="feature-grid">
-          <view v-for="item in features" :key="item.title" class="feature-card panel">
-            <view class="feature-icon-wrap">
-              <UiIcon :name="item.icon" :size="22" />
+          <view v-for="item in features" :key="item.title" class="feature-card panel" role="button" @tap="goFeature(item.path)">
+            <view class="feature-head">
+              <view class="feature-icon-wrap">
+                <UiIcon :name="item.icon" :size="22" />
+              </view>
+              <view class="feature-arrow" aria-hidden="true">
+                <UiIcon name="arrow-right" :size="16" />
+              </view>
             </view>
             <text class="feature-title">{{ item.title }}</text>
             <text class="feature-copy">{{ item.copy }}</text>
@@ -57,16 +61,15 @@ import { onShow } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 import type { IconName } from '@/components/icons/icon-paths'
 import { AuthService } from '@/services/auth'
+import { resolvePostAuthTarget } from '@/services/deep-link'
 import { ProfileService } from '@/services/profile'
 
-const features = ref<{ icon: IconName; title: string; copy: string }[]>([
-  { icon: 'chat', title: '内在对话', copy: '带着情绪与主题进入空间，教练温和推进，不替你做决定。' },
-  { icon: 'practice', title: '今日练习', copy: '三分钟即可完成的小练习，不依赖 AI 也能对齐自己。' },
-  { icon: 'records', title: '沉淀与记录', copy: '信念、重构句、小行动由你手动保存，清晰可回看。' },
-  { icon: 'desire', title: '愿望锚点', copy: '愿望是自我对齐的锚点，不是结果承诺。' },
+const features = ref<{ icon: IconName; title: string; copy: string; path: string }[]>([
+  { icon: 'chat', title: '内在对话', copy: '带着情绪与主题进入空间，教练温和推进，不替你做决定。', path: '/pages/chat/index' },
+  { icon: 'practice', title: '今日练习', copy: '三分钟即可完成的小练习，不依赖 AI 也能对齐自己。', path: '/pages/practice/index' },
+  { icon: 'records', title: '沉淀与记录', copy: '信念、重构句、小行动由你手动保存，清晰可回看。', path: '/pages/records/index' },
+  { icon: 'desire', title: '愿望锚点', copy: '愿望是自我对齐的锚点，不是结果承诺。', path: '/pages/desires/index' },
 ])
-
-const loadingDemo = ref(false)
 
 onShow(async () => {
   await AuthService.hydrateSession()
@@ -84,17 +87,14 @@ function goRegister() {
   uni.navigateTo({ url: '/pages/auth/register' })
 }
 
-async function goDemo() {
-  if (loadingDemo.value) return
-  loadingDemo.value = true
-  try {
-    const result = await AuthService.createDemoAccount()
-    AuthService.redirectAfterAuth(result.user)
-  } catch (error: any) {
-    uni.showToast({ title: error?.message || '无法进入演示账号', icon: 'none' })
-  } finally {
-    loadingDemo.value = false
+function goFeature(path: string) {
+  const target = resolvePostAuthTarget(path)
+  if (!target) return
+  if (AuthService.getSession()) {
+    uni.navigateTo({ url: target })
+    return
   }
+  uni.navigateTo({ url: `/pages/auth/register?next=${encodeURIComponent(target)}` })
 }
 </script>
 
@@ -102,6 +102,7 @@ async function goDemo() {
 
 .scroll {
   height: 100vh;
+  height: 100dvh;
 }
 
 .landing-content {
@@ -164,6 +165,40 @@ async function goDemo() {
 
 .feature-card {
   padding: 24rpx;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out);
+}
+
+.feature-card:active {
+  transform: scale(0.985);
+}
+
+.feature-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12rpx;
+  margin-bottom: 14rpx;
+}
+
+.feature-head .feature-icon-wrap {
+  margin-bottom: 0;
+}
+
+.feature-arrow {
+  width: 32rpx;
+  height: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-faint, #{$ink-faint});
+  transition: color var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
+}
+
+.feature-card:active .feature-arrow {
+  color: var(--accent, #{$accent});
+  transform: translateX(4rpx);
 }
 
 .feature-icon-wrap {

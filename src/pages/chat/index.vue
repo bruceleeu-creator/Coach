@@ -309,6 +309,7 @@ function goConfigureAi() {
   width: 100%;
   max-width: 820px;
   min-height: 100vh;
+  min-height: 100dvh;
   margin: 0 auto;
   background: var(--chat-bg);
   display: flex;
@@ -323,6 +324,7 @@ function goConfigureAi() {
   flex: 1;
   min-width: 0;
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -655,6 +657,14 @@ function goConfigureAi() {
 
 .send.disabled {
   opacity: 0.5;
+}
+
+/* 移动端：输入字号 ≥16px，避免 iOS 聚焦时页面自动放大 */
+@media (hover: none) and (pointer: coarse) {
+  .input,
+  .reflection-textarea {
+    font-size: 16px;
+  }
 }
 
 @media screen and (min-width: 900px) {

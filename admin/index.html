@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>你的内在空间 · 管理后台</title>
+<style>
+  :root {
+    --bg: #f7f6f3;
+    --surface: #ffffff;
+    --ink: #141414;
+    --ink-soft: #6b6b66;
+    --ink-faint: #9a9a94;
+    --border: #e4e2dc;
+    --border-strong: #c8c5bc;
+    --accent: #3d6b6b;
+    --danger: #f24822;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Fustat', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .shell { max-width: 1080px; margin: 0 auto; padding: 40px 24px 64px; }
+  .brand { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 28px; }
+  .brand h1 { font-size: 22px; letter-spacing: -0.02em; }
+  .brand .sub {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .kicker {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin-bottom: 6px;
+  }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+  .stat-value { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; }
+  .stat-label { color: var(--ink-soft); font-size: 13px; margin-top: 2px; }
+  .chart { display: flex; align-items: flex-end; gap: 10px; height: 120px; margin-top: 16px; }
+  .chart .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+  .chart .bar { width: 100%; max-width: 42px; background: var(--accent); border-radius: 4px 4px 0 0; min-height: 2px; transition: height 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+  .chart .bar-label { font-size: 11px; color: var(--ink-faint); }
+  .chart .bar-count { font-size: 11px; color: var(--ink-soft); }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 12px; color: var(--ink-faint); font-weight: 600; letter-spacing: 0.06em; padding: 10px 12px; border-bottom: 1px solid var(--border-strong); }
+  td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  tr:last-child td { border-bottom: none; }
+  .empty { color: var(--ink-faint); text-align: center; padding: 32px 0; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 44px; padding: 0 22px; border-radius: 6px;
+    background: var(--ink); color: #fafaf8; border: 1px solid transparent;
+    font-size: 15px; font-weight: 600; cursor: pointer; user-select: none;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn.secondary { background: var(--surface); color: var(--ink); border-color: var(--border-strong); }
+  .input {
+    width: 100%; min-height: 46px; padding: 10px 14px;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: var(--surface); color: var(--ink); font-size: 15px;
+    outline: none; transition: border-color 0.18s;
+  }
+  .input:focus { border-color: var(--border-strong); box-shadow: 0 0 0 3px rgba(61, 107, 107, 0.12); }
+  .login-wrap { max-width: 380px; margin: 12vh auto 0; }
+  .error-tip { color: var(--danger); font-size: 13px; margin-top: 10px; min-height: 20px; }
+  .toolbar { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 20px; }
+  .toolbar .meta { color: var(--ink-faint); font-size: 12px; }
+  .toolbar .actions { display: flex; gap: 10px; }
+  .hidden { display: none; }
+  @media (max-width: 640px) {
+    .shell { padding: 24px 16px 48px; }
+    td, th { padding: 8px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="brand">
+    <h1>你的内在空间 · 管理后台</h1>
+    <span class="sub">ADMIN</span>
+  </div>
+
+  <div id="login-view" class="login-wrap hidden">
+    <div class="card">
+      <div class="kicker">登录</div>
+      <p style="color: var(--ink-soft); font-size: 13px; margin-bottom: 14px;">仅管理员访问。数据只读，展示脱敏手机号。</p>
+      <input id="password" class="input" type="password" placeholder="管理密码" autocomplete="current-password" />
+      <div id="login-error" class="error-tip"></div>
+      <button id="login-btn" class="btn" style="width: 100%; margin-top: 6px;">进入后台</button>
+    </div>
+  </div>
+
+  <div id="dash-view" class="hidden">
+    <div class="toolbar">
+      <span class="meta" id="updated-at"></span>
+      <div class="actions">
+        <button id="refresh-btn" class="btn secondary">刷新</button>
+        <button id="logout-btn" class="btn secondary">退出</button>
+      </div>
+    </div>
+
+    <div class="stat-grid" id="stat-grid"></div>
+
+    <div class="card" style="margin-top: 20px;">
+      <div class="kicker">最近 7 天新增注册</div>
+      <div class="chart" id="chart"></div>
+    </div>
+
+    <div class="card">
+      <div class="kicker">注册用户</div>
+      <div id="user-table-wrap">
+        <table>
+          <thead>
+            <tr><th>手机号（脱敏）</th><th>注册时间</th><th>最近登录</th><th>登录次数</th><th>账号 ID</th></tr>
+          </thead>
+          <tbody id="user-rows"></tbody>
+        </table>
+        <div id="user-empty" class="empty hidden">还没有注册用户。用户在 H5 完成短信验证注册后，会出现在这里。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var API_BASE = 'https://coach-d7gllntbp92e9daa5-1411432016.ap-shanghai.app.tcloudbase.com/admin-api';
+  var TOKEN_KEY = 'coach_admin_token';
+
+  var loginView = document.getElementById('login-view');
+  var dashView = document.getElementById('dash-view');
+  var passwordInput = document.getElementById('password');
+  var loginBtn = document.getElementById('login-btn');
+  var loginError = document.getElementById('login-error');
+  var refreshBtn = document.getElementById('refresh-btn');
+  var logoutBtn = document.getElementById('logout-btn');
+  var updatedAt = document.getElementById('updated-at');
+  var statGrid = document.getElementById('stat-grid');
+  var chart = document.getElementById('chart');
+  var userRows = document.getElementById('user-rows');
+  var userEmpty = document.getElementById('user-empty');
+
+  function getToken() { return sessionStorage.getItem(TOKEN_KEY) || ''; }
+  function setToken(t) { t ? sessionStorage.setItem(TOKEN_KEY, t) : sessionStorage.removeItem(TOKEN_KEY); }
+
+  function showDash() { loginView.classList.add('hidden'); dashView.classList.remove('hidden'); }
+  function showLogin() { dashView.classList.add('hidden'); loginView.classList.remove('hidden'); passwordInput.value = ''; loginError.textContent = ''; }
+
+  function post(path, body) {
+    return fetch(API_BASE + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {})
+    }).then(function (r) { return r.json(); });
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function fmtTime(iso) {
+    if (!iso) return '—';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return esc(iso);
+    var p = function (n) { return n < 10 ? '0' + n : '' + n; };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+
+  function renderStats(stats) {
+    var cards = [
+      { value: stats.totalUsers, label: '注册用户' },
+      { value: stats.todayNew, label: '今日新增' },
+      { value: stats.active7d, label: '7 日活跃' },
+      { value: stats.totalLogins, label: '累计登录' }
+    ];
+    statGrid.innerHTML = cards.map(function (c) {
+      return '<div class="stat-card"><div class="stat-value">' + c.value + '</div><div class="stat-label">' + c.label + '</div></div>';
+    }).join('');
+
+    var daily = stats.dailyNew || [];
+    var max = Math.max(1, Math.max.apply(null, daily.map(function (d) { return d.count; })));
+    chart.innerHTML = daily.map(function (d) {
+      var h = Math.round((d.count / max) * 96) + 2;
+      return '<div class="bar-wrap">' +
+        '<span class="bar-count">' + d.count + '</span>' +
+        '<div class="bar" style="height:' + h + 'px"></div>' +
+        '<span class="bar-label">' + esc(String(d.day).slice(5)) + '</span>' +
+      '</div>';
+    }).join('');
+
+    updatedAt.textContent = '数据更新于 ' + fmtTime(stats.updatedAt);
+  }
+
+  function renderUsers(payload) {
+    var users = payload.users || [];
+    if (!users.length) {
+      userEmpty.classList.remove('hidden');
+      return;
+    }
+    userEmpty.classList.add('hidden');
+    userRows.innerHTML = users.map(function (u) {
+      return '<tr>' +
+        '<td>' + esc(u.phoneMasked) + '</td>' +
+        '<td>' + fmtTime(u.createdAt) + '</td>' +
+        '<td>' + fmtTime(u.lastLoginAt) + '</td>' +
+        '<td>' + esc(u.loginCount) + '</td>' +
+        '<td style="color: var(--ink-faint); font-size: 12px;">' + esc(u.accountId) + '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  function loadData() {
+    var token = getToken();
+    return post('/stats', { token: token }).then(function (res) {
+      if (!res.ok) throw new Error(res.error || '加载失败');
+      renderStats(res.stats);
+      return post('/users', { token: token });
+    }).then(function (res) {
+      if (!res.ok) throw new Error(res.error || '加载失败');
+      renderUsers(res);
+    }).catch(function (err) {
+      setToken('');
+      showLogin();
+      loginError.textContent = (err && err.message) || '登录已过期，请重新登录';
+    });
+  }
+
+  function doLogin() {
+    loginError.textContent = '';
+    var password = passwordInput.value;
+    if (!password) { loginError.textContent = '请输入管理密码'; return; }
+    loginBtn.disabled = true;
+    loginBtn.textContent = '验证中…';
+    post('/login', { password: password }).then(function (res) {
+      if (!res.ok) throw new Error(res.error || '登录失败');
+      setToken(res.token);
+      showDash();
+      return loadData();
+    }).catch(function (err) {
+      loginError.textContent = (err && err.message) || '登录失败';
+    }).then(function () {
+      loginBtn.disabled = false;
+      loginBtn.textContent = '进入后台';
+    });
+  }
+
+  loginBtn.addEventListener('click', doLogin);
+  passwordInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') doLogin(); });
+  refreshBtn.addEventListener('click', loadData);
+  logoutBtn.addEventListener('click', function () { setToken(''); showLogin(); });
+
+  if (getToken()) {
+    showDash();
+    loadData();
+  } else {
+    showLogin();
+  }
+})();
+</script>
+</body>
+</html>

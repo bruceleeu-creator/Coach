@@ -176,6 +176,7 @@ function toggleEquip(skillId: string) {
 
 .scroll {
   height: 100vh;
+  height: 100dvh;
 }
 
 .balance-card {

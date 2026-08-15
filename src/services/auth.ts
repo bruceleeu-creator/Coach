@@ -3,6 +3,7 @@ import { CloudBaseAuthService } from './cloudbase-auth'
 import { createOrBindProfile, maskPhone } from './profile-store'
 import { readTabSessionSync, SessionCookieService } from './session-cookie'
 import { createId, StorageService } from './storage'
+import { recordUserLogin } from './user-ledger'
 
 const ACCOUNTS_KEY = 'auth_accounts'
 const DEMO_PHONE = '18888888888'
@@ -299,6 +300,11 @@ export class AuthService {
         lastLoginAt: now,
       }
     StorageService.set(ACCOUNTS_KEY, [account, ...accounts.filter((item) => item.id !== account.id)])
+    void recordUserLogin({
+      accountId: account.id,
+      cloudbaseUserId,
+      phoneMasked: maskPhone(phone),
+    })
     return this.createSessionForAccount(account)
   }
 }

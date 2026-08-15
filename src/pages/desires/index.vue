@@ -150,6 +150,7 @@ function statusLabel(status: Desire['status']) {
 
 .scroll {
   height: 100vh;
+  height: 100dvh;
 }
 
 .section {

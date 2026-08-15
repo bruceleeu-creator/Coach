@@ -21,10 +21,9 @@
             <view class="primary-btn" :class="{ disabled: loading }" @tap="login">{{ loading ? '正在登录' : '登录' }}</view>
             <view class="auth-links">
               <text class="text-link" @tap="openRegister">创建新账号</text>
-              <text class="text-link muted" @tap="loginDemo">体验演示账号</text>
             </view>
           </view>
-          <text class="fine-print">配置 CloudBase 后优先云端登录；未配置时兼容历史本地账号与演示账号。</text>
+          <text class="fine-print">配置 CloudBase 后优先云端登录；未配置时兼容历史本地账号。</text>
         </view>
       </view>
     </scroll-view>
@@ -35,19 +34,26 @@
 import { onLoad } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 import { AuthService } from '@/services/auth'
+import { resolvePostAuthTarget } from '@/services/deep-link'
 import { ProfileService } from '@/services/profile'
 
 const braceletId = ref('')
+const nextTarget = ref('')
 const phone = ref('')
 const password = ref('')
 const loading = ref(false)
 
 onLoad((query) => {
   braceletId.value = String(query?.bracelet_id || query?.braceletId || '')
+  nextTarget.value = resolvePostAuthTarget(query?.next) || ''
   const user = ProfileService.getUser()
   if (user) {
     if (braceletId.value) ProfileService.bindBracelet(braceletId.value)
-    AuthService.redirectAfterAuth(user)
+    if (nextTarget.value) {
+      uni.reLaunch({ url: nextTarget.value })
+    } else {
+      AuthService.redirectAfterAuth(user)
+    }
   }
 })
 
@@ -65,7 +71,11 @@ async function login() {
   try {
     const result = await AuthService.login({ phone: phone.value, password: password.value })
     if (braceletId.value) ProfileService.bindBracelet(braceletId.value)
-    AuthService.redirectAfterAuth(result.user)
+    if (nextTarget.value) {
+      uni.reLaunch({ url: nextTarget.value })
+    } else {
+      AuthService.redirectAfterAuth(result.user)
+    }
   } catch (error: any) {
     uni.showToast({ title: error?.message || '手机号或密码不正确', icon: 'none' })
   } finally {
@@ -73,23 +83,11 @@ async function login() {
   }
 }
 
-async function loginDemo() {
-  if (loading.value) return
-  loading.value = true
-  try {
-    const result = await AuthService.createDemoAccount()
-    if (braceletId.value) ProfileService.bindBracelet(braceletId.value)
-    AuthService.redirectAfterAuth(result.user)
-  } catch (error: any) {
-    uni.showToast({ title: error?.message || '无法进入演示账号', icon: 'none' })
-  } finally {
-    loading.value = false
-  }
-}
-
 function openRegister() {
-  const query = braceletId.value ? `?bracelet_id=${encodeURIComponent(braceletId.value)}` : ''
-  uni.navigateTo({ url: `/pages/auth/register${query}` })
+  const query: string[] = []
+  if (braceletId.value) query.push(`bracelet_id=${encodeURIComponent(braceletId.value)}`)
+  if (nextTarget.value) query.push(`next=${encodeURIComponent(nextTarget.value)}`)
+  uni.navigateTo({ url: `/pages/auth/register${query.length ? `?${query.join('&')}` : ''}` })
 }
 
 function goLanding() {
@@ -101,6 +99,7 @@ function goLanding() {
 
 .scroll {
   height: 100vh;
+  height: 100dvh;
 }
 
 .login-card {
@@ -129,11 +128,6 @@ function goLanding() {
   font-size: $font-sm;
   font-weight: 600;
   -webkit-tap-highlight-color: transparent;
-}
-
-.text-link.muted {
-  color: var(--ink-soft, #{$ink-soft});
-  font-weight: 500;
 }
 
 .disabled {

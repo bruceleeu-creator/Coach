@@ -26,6 +26,8 @@ VITE_CLOUDBASE_ACCESS_KEY=                 # CloudBase publishable key
 VITE_AUTH_API_BASE=                        # auth-session HTTP 函数网关地址，空则用 sessionStorage 会话
 ```
 
+> 注意：`your-*` 占位值会被代码视为「未配置」（`cloudbase-app.ts` 的 `normalizeEnvValue`）。注册/登录用的手机号短信验证码走 CloudBase Auth：需要在控制台创建/激活环境、开启「身份认证 → 登录方式 → 手机号 → 短信验证码登录」（并配置短信签名/模板），再把真实环境 ID 与 Publishable Key 填入 .env；未配置时注册页会显示提示条，登录自动回退到历史本地账号。
+
 **红线：任何 DeepSeek API Key 不进代码、.env、文档、日志。** 本地开发在「我 → 开发者工具」页面粘贴 Key（存 localStorage 键 `inner_space_developer_deepseek_api_key`，全局不隔离不同步）；生产放在云函数 `ai-complete` 的环境变量 `DEEPSEEK_API_KEY`。
 
 ## 目录结构
