@@ -53,11 +53,71 @@ cloudfunctions/
   auth-session/     # HTTP 函数：HttpOnly Cookie 会话
 ```
 
-## 页面与路由
+## 功能详解
 
-入口 `/pages/landing/index`（营销落地页，已有会话则跳转进应用）。自定义 `UiTabBar` 四个主 Tab：welcome(今日) / practice(练习) / chat(空间，桌面双栏会话列表) / settings(我，含开发者工具 tab)。子页：auth/login、auth/register、onboarding、flow/emotions→topics→breathing（引导流）、records(成长记录四 Tab)、desires(愿望 CRUD)、shop(积分商城/Skill)。
+### 使用旅程
 
-快捷入口：`settings?tab=developer` 直达开发者工具；链接带 `bracelet_id` 参数可触发实体手环锚点绑定（NFC/二维码场景）。
+入口 `/pages/landing/index`（营销落地页：价值主张「安静下来，才能听见自己」+ 演示账号/注册/登录入口，已有会话自动跳进应用）→ auth/register（CloudBase 短信验证码注册，一手机号一账号）/ auth/login（手机号+密码，支持演示账号与历史本地账号）→ onboarding（收集称呼与重要过往，进入 Prompt 上下文）→ 主应用。
+
+自定义 `UiTabBar` 四个主 Tab：**welcome(今日) / practice(练习) / chat(空间) / settings(我)**。<900px 底栏，≥900px 左侧栏；空间页桌面端为双栏（左会话列表右对话），移动端单栏。
+
+### 空间（AI 教练对话）— 核心模块
+
+`pages/chat/index` + `services/chat.ts`。右上角 ＋ 提供 6 种进入方式（`services/chat-entry.ts`）：
+
+- **完整仪式**：flow 引导流 情绪(多选)→主题(多选)→呼吸调频(30 秒呼吸练习，可选疗愈音频)→进入对话；情绪与主题写入会话 `SessionCoachMeta`，此后每轮 Prompt 都携带
+- **直接倾诉** / **继续上次对话** / **带着愿望进入**（携带活跃愿望上下文）
+- **练习后进入**（把练习写下的内容带进对话）/ **带着回顾进入**（携带 7 天回顾摘要，今日页与记录页均可触发）
+
+对话机制：规则教练状态机识别用户状态（焦虑/匮乏/自我怀疑/关系拉扯/行动卡住/愿望不清）与会话阶段（宣泄→澄清→信念识别→信念重构→行动落地），长期记忆按相关性最多选 3 条注入；失败保留用户消息、缺 Key 弹窗直达开发者工具；「沉淀这一刻」可手动把关键句存为信念/重构/行动/洞察（**绝不自动总结**）。危机协议对用户不可见（详见 AI 对话链路）。
+
+### 今日（仪表盘）
+
+`pages/welcome/index` + `services/today.ts`。按称呼问候、**今日状态**（记录此刻情绪+一句话，写入当日快照）、**今日一步**（未完成的小行动）、活跃愿望锚点（约 3 分钟）、手环连接状态、最近对话（继续/带着回顾进入）、今日练习入口、完整仪式入口、积分商店入口。文案基调：「今天，先不用急着变好」。
+
+### 练习
+
+`pages/practice/index` + `services/practice.ts`。每日练习按年内天数轮换 5 种类型，也可手动选当日类型：**信念改写 / 感谢记录 / 愿望靠近 / 身体扫描 / 呼吸稳定**。完成后记入练习历史（统计用），并可一键把练习内容带进 AI 对话（after_practice 模式）。
+
+### 愿望管理
+
+`pages/desires/index` + `services/desires.ts`。字段：标题 / 领域 / 为什么重要 / **当前阻碍信念** / 下一步小行动。状态 active / paused / completed，可设为活跃（作为对齐锚点显示在今日页并注入 Prompt 上下文）。
+
+### 沉淀与成长记录
+
+`pages/records/index` + `services/reflections.ts` / `local-stats.ts`。沉淀 4 类：**信念 / 重构句 / 行动 / 洞察**（对话页手动保存；行动完成后自动记积分）。记录页四个 Tab：最近对话 / 信念与重构 / 行动 / 统计。统计含 **7 天自我觉察**（练习天数、对话次数、信念/重构数、洞察数、行动完成率，反复声明「数字来自主动记录，不代表诊断」）与最近 30 天，可**带着回顾进入聊天**。
+
+### 成长系统（积分 / 等级 / 每日任务）
+
+`services/gamification.ts`。积分账本 `growth_points_ledger`，`awardOnce(source, refId)` 幂等去重：
+
+| 每日任务 | 要求 | 积分 |
+|---|---|---|
+| 今日觉察 | 记录情绪或一句话 | 10 |
+| 今日练习 | 完成当日练习 | 20 |
+| 深入对话 | 当天 3 轮用户发言 | 25 |
+| 沉淀一句 | 保存任一沉淀 | 15 |
+
+等级按**累计获得**判定（消费不降级）共 5 级：初入空间(0) → 稳定回访(120) → 深度觉察(360) → 行动整合(720) → 内在锚定(1200)。聊天、练习完成、行动完成等行为均会计分。
+
+### 商城（积分商店 / Skill 商城）
+
+`pages/shop/index` + `services/shop.ts`。积分商店（一次性购买）：初锚徽章 40、稳定回访徽章 80、沉淀提示增强 60、今日进度高亮 50、紧凑气泡 70、标签字重 45。Skill 商城：**最多同时装备 2 个**，深听(免费) / 信念透镜 90 / 微行动落地 100 / 丰盛对齐 120 / 身体信号 85 / 清醒镜子 110。装备的技能通过 `buildEquippedSkillPromptBlock()` 注入教练 System Prompt 增强本轮风格（如「更少建议、更多情绪命名」「把对话收成 5–15 分钟小行动」），**安全边界永远优先于技能**。
+
+### 个性化与我
+
+`pages/settings/index` 双 Tab：
+
+- **用户设置**：AI 配置（教练语气/回复长度/自定义规则/禁止限制规则，附实时 Prompt 预览）、明暗（结构层）+ 点缀色（气质层，9 种）、账号资料（称呼/重要过往）、成长进度、账户安全（改密码）、愿望概览、实体锚点、退出登录。
+- **开发者工具**（`settings?tab=developer` 直达）：DeepSeek API Key 管理（本机 localStorage，密码框输入、可测试连接）、模型选择（deepseek-chat / deepseek-reasoner）、当前调用路径展示。
+
+### 实体锚点（手环）
+
+链接携带 `bracelet_id`（NFC/二维码）进入即触发绑定；绑定后显示在今日页连接状态，并作为物理锚点意象进入 Prompt 上下文。完全可选。
+
+### 云同步
+
+登录 CloudBase 账号后，scoped 本地数据同步到 NoSQL 集合 `inner_space_sync`（每账号一条 `bundle_{accountId}` 文档）；开发者 API Key 全局存储、**永不**同步云端。
 
 ## 数据层
 
