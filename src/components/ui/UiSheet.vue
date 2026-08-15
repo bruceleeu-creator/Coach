@@ -25,7 +25,6 @@ function close() {
 </script>
 
 <style scoped lang="scss">
-@import '@/uni.scss';
 
 .ui-sheet-mask {
   position: fixed;

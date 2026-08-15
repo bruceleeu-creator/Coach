@@ -147,7 +147,6 @@ function statusLabel(status: Desire['status']) {
 </script>
 
 <style scoped lang="scss">
-@import '@/uni.scss';
 
 .scroll {
   height: 100vh;

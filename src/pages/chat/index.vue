@@ -304,7 +304,6 @@ function goConfigureAi() {
 </script>
 
 <style scoped lang="scss">
-@import '@/uni.scss';
 
 .chat-page {
   width: 100%;

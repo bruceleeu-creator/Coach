@@ -6,7 +6,6 @@
 </template>
 
 <style scoped lang="scss">
-@import '@/uni.scss';
 
 .ui-breath-ring-wrap {
   position: relative;

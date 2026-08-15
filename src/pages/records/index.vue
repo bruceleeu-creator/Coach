@@ -247,7 +247,6 @@ function openShop() {
 </script>
 
 <style scoped lang="scss">
-@import '@/uni.scss';
 
 .records-scroll {
   height: 100vh;

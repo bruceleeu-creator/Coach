@@ -44,7 +44,6 @@ const progress = computed(() => {
 </script>
 
 <style scoped lang="scss">
-@import '@/uni.scss';
 
 .ui-today-progress {
   margin-top: 16rpx;

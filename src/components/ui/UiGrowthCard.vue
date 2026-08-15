@@ -35,7 +35,6 @@ defineProps<{ overview: GrowthOverview }>()
 </script>
 
 <style scoped lang="scss">
-@import '@/uni.scss';
 
 .ui-growth-card {
   margin-top: 20rpx;

@@ -98,7 +98,6 @@ function goLanding() {
 </script>
 
 <style lang="scss" scoped>
-@import '@/uni.scss';
 
 .scroll {
   height: 100vh;

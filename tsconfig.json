@@ -4,7 +4,8 @@
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@cloudbase/ai": ["./src/types/cloudbase-ai.d.ts"]
     },
     "lib": ["esnext", "dom"],
     "types": ["@dcloudio/types", "vite/client"]

@@ -22,7 +22,6 @@ function onBack() {
 </script>
 
 <style scoped lang="scss">
-@import '@/uni.scss';
 
 .ui-subpage-nav {
   min-height: 56rpx;

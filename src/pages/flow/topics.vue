@@ -46,7 +46,6 @@ function next() {
 </script>
 
 <style scoped lang="scss">
-@import '@/uni.scss';
 
 .flow-layout {
   max-width: 720px;

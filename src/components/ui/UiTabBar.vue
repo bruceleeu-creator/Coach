@@ -38,7 +38,6 @@ function onTap(key: MainTabKey) {
 </script>
 
 <style scoped lang="scss">
-@import '@/uni.scss';
 
 .ui-tabbar {
   position: fixed;

@@ -26,7 +26,6 @@ const visible = computed(() => props.showWhenIdle || (props.meta?.turnCount || 0
 </script>
 
 <style scoped lang="scss">
-@import '@/uni.scss';
 
 .ui-coach-strip {
   margin: 0 20rpx 12rpx;
