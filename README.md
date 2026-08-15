@@ -1,4 +1,4 @@
-# agent.md — 你的内在空间（Coach）开发指南
+# 你的内在空间（Coach）
 
 uni-app + Vue 3 + TypeScript 的 H5 应用：AI 显化教练「你的内在空间」。数据默认存浏览器本地、按账号隔离，AI 对话走 DeepSeek（本机 Key 直连或 CloudBase 云函数转发）。本文档是项目唯一文档，涵盖运行、架构、约定与红线。
 
